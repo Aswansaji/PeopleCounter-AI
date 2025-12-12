@@ -47,6 +47,30 @@ python main.py
 
 ## Usage 🎬
 
+### Option 1: Web Interface (Recommended for Third-Party Users)
+
+1. **Start the web server:**
+   ```bash
+   # Windows
+   run_web.bat
+   
+   # Or manually:
+   python app.py
+   ```
+
+2. **Open browser:** Navigate to `http://localhost:5000`
+
+3. **Upload video:**
+   - Drag and drop MP4 file or click to browse
+   - Click "Process Video"
+   - Wait for analysis to complete
+
+4. **View results:** 
+   - HTML report automatically opens with full statistics
+   - Download or share the report
+
+### Option 2: Command Line (For Developers)
+
 1. Place your video file as `data/mall_entry.mp4`
 2. Run the application: `python main.py`
 3. Watch the video with real-time tracking

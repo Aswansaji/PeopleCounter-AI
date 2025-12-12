@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PeopleCounter-AI | Upload & Process Videos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .header .subtitle {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .upload-label {
+            display: block;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #343a40;
+            margin-bottom: 15px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #ede9ff;
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e0d4ff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            color: #495057;
+            font-size: 0.95em;
+        }
+
+        .upload-text strong {
+            color: #667eea;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .file-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .file-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .file-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-info-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .file-info-value {
+            color: #6c757d;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-process {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            grid-column: 1 / -1;
+            display: none;
+        }
+
+        .btn-process.show {
+            display: block;
+        }
+
+        .btn-process:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-process:active {
+            transform: translateY(0);
+        }
+
+        .btn-process:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-reset {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .btn-reset:hover {
+            background: #dee2e6;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status-message.show {
+            display: block;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+
+            .upload-area {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 PeopleCounter-AI</h1>
+            <p>Real-time People Counting System</p>
+            <p class="subtitle">Upload your video to get started</p>
+        </div>
+
+        <div class="content">
+            <div class="upload-section">
+                <label class="upload-label">Select Video File</label>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📹</div>
+                    <p class="upload-text">
+                        Drag and drop your <strong>MP4</strong> video here<br>
+                        or click to browse
+                    </p>
+                </div>
+                <input type="file" id="fileInput" accept=".mp4,.avi,.mov,.mkv">
+            </div>
+
+            <div class="file-info" id="fileInfo">
+                <div class="file-info-item">
+                    <span class="file-info-label">File Name:</span>
+                    <span class="file-info-value" id="fileName">-</span>
+                </div>
+                <div class="file-info-item">
+                    <span class="file-info-label">File Size:</span>
+                    <span class="file-info-value" id="fileSize">-</span>
+                </div>
+                <div class="file-info-item">
+                    <span class="file-info-label">File Type:</span>
+                    <span class="file-info-value" id="fileType">-</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-process" id="processBtn" onclick="processVideo()">
+                    Process Video
+                </button>
+                <button class="btn-reset" id="resetBtn" onclick="resetUpload()">
+                    Choose Another
+                </button>
+            </div>
+
+            <div class="status-message" id="statusMessage"></div>
+        </div>
+
+        <div class="footer">
+            <p>✨ Advanced video analysis using YOLOv8 + SORT Tracking</p>
+            <p><a href="https://github.com/Aswansaji/PeopleCounter-AI" target="_blank">View on GitHub</a></p>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const processBtn = document.getElementById('processBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        let selectedFile = null;
+
+        // Upload area click
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            const validTypes = ['video/mp4', 'video/x-msvideo', 'video/quicktime', 'video/x-matroska'];
+            
+            if (!validTypes.includes(file.type) && !file.name.match(/\.(mp4|avi|mov|mkv)$/i)) {
+                showStatus('Invalid file type. Please upload MP4, AVI, MOV, or MKV files.', 'error');
+                return;
+            }
+
+            if (file.size > 500 * 1024 * 1024) {
+                showStatus('File is too large. Maximum size is 500MB.', 'error');
+                return;
+            }
+
+            selectedFile = file;
+            updateFileInfo(file);
+            uploadFile(file);
+        }
+
+        function updateFileInfo(file) {
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('fileType').textContent = file.type || 'Unknown';
+            fileInfo.classList.add('show');
+            processBtn.classList.add('show');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showStatus('<div class="spinner"></div> Uploading...', 'info');
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus('✅ File uploaded successfully!', 'success');
+                } else {
+                    showStatus('❌ Upload failed: ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                showStatus('❌ Error uploading file: ' + error, 'error');
+            });
+        }
+
+        function processVideo() {
+            if (!selectedFile) {
+                showStatus('❌ No file selected', 'error');
+                return;
+            }
+
+            processBtn.disabled = true;
+            showStatus('<div class="spinner"></div> Processing video...', 'info');
+
+            fetch('/process', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    filename: selectedFile.name.substring(0, selectedFile.name.lastIndexOf('.')) + '_' + new Date().getTime() + selectedFile.name.substring(selectedFile.name.lastIndexOf('.'))
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus('<div class="spinner"></div> Processing started. Please wait...', 'info');
+                    checkReportStatus();
+                } else {
+                    showStatus('❌ Processing failed: ' + data.error, 'error');
+                    processBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                showStatus('❌ Error: ' + error, 'error');
+                processBtn.disabled = false;
+            });
+        }
+
+        function checkReportStatus() {
+            const maxAttempts = 120; // Check for 2 minutes
+            let attempts = 0;
+
+            const interval = setInterval(() => {
+                attempts++;
+                fetch('/status')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.report_generated) {
+                            clearInterval(interval);
+                            showStatus('✅ Processing complete! Generating report...', 'success');
+                            setTimeout(() => {
+                                window.location.href = '/report';
+                            }, 1500);
+                        } else if (attempts >= maxAttempts) {
+                            clearInterval(interval);
+                            showStatus('⏱️ Processing taking longer than expected. Check the console for details.', 'error');
+                            processBtn.disabled = false;
+                        }
+                    })
+                    .catch(error => console.error('Status check error:', error));
+            }, 1000);
+        }
+
+        function resetUpload() {
+            selectedFile = null;
+            fileInput.value = '';
+            fileInfo.classList.remove('show');
+            processBtn.classList.remove('show');
+            processBtn.disabled = false;
+            statusMessage.classList.remove('show');
+        }
+
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message show ${type}`;
+        }
+    </script>
+</body>
+</html>
