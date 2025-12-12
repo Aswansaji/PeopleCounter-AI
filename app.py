@@ -111,7 +111,11 @@ def process_video():
         }), 200
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        import traceback
+        error_msg = str(e)
+        print(f"Error in process_video: {error_msg}")
+        print(traceback.format_exc())
+        return jsonify({'error': error_msg}), 500
 
 
 @app.route('/status')
