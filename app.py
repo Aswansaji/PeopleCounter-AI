@@ -93,16 +93,28 @@ def process_video():
         
         target_path = os.path.join(data_folder, 'mall_entry.mp4')
         shutil.copy(filepath, target_path)
-        
-        # Run main.py in subprocess
+        # Remove old report if present so status reflects the new run
+        report_path = os.path.join(os.path.dirname(__file__), 'people_counter_report.html')
+        try:
+            if os.path.exists(report_path):
+                os.remove(report_path)
+        except Exception:
+            pass
+
+        # Run main.py in subprocess and pass the original uploaded filepath so
+        # the processing script can delete it after finishing.
         python_exe = os.path.join(os.path.dirname(__file__), '.venv', 'Scripts', 'python.exe')
         if not os.path.exists(python_exe):
             # Fallback to system python
             python_exe = sys.executable
-        
-        # Start processing in background
+
+        # Start processing in background and pass the uploaded file path
         main_py = os.path.join(os.path.dirname(__file__), 'main.py')
-        subprocess.Popen([python_exe, main_py], cwd=os.path.dirname(__file__))
+        try:
+            subprocess.Popen([python_exe, main_py, filepath], cwd=os.path.dirname(__file__))
+        except Exception:
+            # Fallback to running without argument if something goes wrong
+            subprocess.Popen([python_exe, main_py], cwd=os.path.dirname(__file__))
         
         return jsonify({
             'success': True,

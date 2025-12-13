@@ -71,11 +71,41 @@ python main.py
 
 ### Option 2: Command Line (For Developers)
 
-1. Place your video file as `data/mall_entry.mp4`
-2. Run the application: `python main.py`
-3. Watch the video with real-time tracking
-4. Press 'q' to quit and generate HTML report
-5. Report automatically opens in your browser
+1. **Place your video file** in the `data/` folder as `mall_entry.mp4`
+
+2. **Run the application:**
+   ```bash
+   # Using virtual environment
+   python main.py
+   
+   # Or with full path
+   .venv\Scripts\python.exe main.py  # Windows
+   .venv/bin/python main.py          # Linux/MacOS
+   ```
+
+3. **What you'll see:**
+   - Video window opens with real-time processing
+   - **Green bounding boxes** around detected people
+   - **Track IDs** displayed on each person
+   - **Yellow counting line** across the frame
+   - **Entry Zone** (green, above line) - crossing down = Entry
+   - **Exit Zone** (red, below line) - crossing up = Exit
+   - **Statistics panel** (top-left) showing:
+     - Total Entered
+     - Total Exited
+     - Currently Inside
+     - Frame count and active tracks
+   - **Trajectory lines** showing movement direction
+   - **Real-time counters** updating as people cross the line
+
+4. **Controls:**
+   - Press **'q'** to quit and generate HTML report
+   - Report automatically opens in your browser
+
+5. **Output:**
+   - HTML report with complete statistics
+   - Detailed event log with timestamps
+   - Professional dashboard interface
 
 ## Project Structure 📁
 
@@ -159,6 +189,71 @@ See `requirements.txt` for specific versions.
 - Requires clear view of counting line
 - May struggle with occlusion/crowding
 - Calibration on first frame for height estimation
+
+## Creating Standalone Executable 🎁
+
+Want to run without Python installed? Create a standalone `.exe` file:
+
+### Using PyInstaller
+
+1. **Install PyInstaller:**
+   ```bash
+   pip install pyinstaller
+   ```
+
+2. **Create executable:**
+   ```bash
+   # Simple version (one file)
+   pyinstaller --onefile main.py
+   
+   # With icon and hidden imports
+   pyinstaller --onefile --icon=icon.ico --hidden-import=ultralytics --hidden-import=filterpy main.py
+   
+   # Include all dependencies
+   pyinstaller --onefile --collect-all ultralytics --collect-all filterpy --hidden-import=cv2 main.py
+   ```
+
+3. **Find executable:**
+   - Located in `dist/main.exe` (Windows) or `dist/main` (Linux/MacOS)
+   - Copy to any computer and run directly
+   - No Python installation required!
+
+4. **Include with executable:**
+   - Copy the `data/` folder (with your video)
+   - Copy the `utils/` folder
+   - Copy `yolov8n.pt` model file (auto-downloads on first run)
+
+5. **Run executable:**
+   ```bash
+   # Windows
+   main.exe
+   
+   # Linux/MacOS
+   ./main
+   ```
+
+### Distribution Package
+
+Create a complete package for distribution:
+
+```bash
+# 1. Build executable
+pyinstaller --onefile --name "PeopleCounter" main.py
+
+# 2. Create distribution folder
+mkdir PeopleCounter-Portable
+copy dist\PeopleCounter.exe PeopleCounter-Portable\
+mkdir PeopleCounter-Portable\utils
+copy utils\* PeopleCounter-Portable\utils\
+mkdir PeopleCounter-Portable\data
+
+# 3. Add README
+echo "Place your MP4 video in the data folder as mall_entry.mp4" > PeopleCounter-Portable\README.txt
+echo "Double-click PeopleCounter.exe to run" >> PeopleCounter-Portable\README.txt
+
+# 4. Zip and distribute
+# Users can run without Python!
+```
 
 ## Future Enhancements 🔮
 

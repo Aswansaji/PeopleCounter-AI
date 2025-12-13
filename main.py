@@ -9,11 +9,16 @@ from ultralytics import YOLO
 import os
 import sys
 import webbrowser
+import subprocess
+import time
 
 # Add utils to path
 sys.path.append(os.path.dirname(__file__))
 from utils.sort_tracker import Sort
 from utils.report_generator import ReportGenerator
+
+# If the web UI passed the uploaded filepath as an argument, capture it
+UPLOADED_FILEPATH = sys.argv[1] if len(sys.argv) > 1 else None
 
 
 def main():
@@ -44,8 +49,24 @@ def main():
     video_path = os.path.join("data", "mall_entry.mp4")
     
     if not os.path.exists(video_path):
-        print(f"Error: Video file not found at {video_path}")
-        print("Please place 'mall_entry.mp4' in the data folder.")
+        print(f"Video file not found at {video_path}.")
+        print("Launching web upload UI so you can upload a video.")
+
+        # Try to start the Flask web UI (app.py) using the same Python executable
+        try:
+            python_exe = sys.executable
+            app_py = os.path.join(os.path.dirname(__file__), 'app.py')
+            if os.path.exists(app_py):
+                subprocess.Popen([python_exe, app_py], cwd=os.path.dirname(__file__))
+                # Give the server a moment to start
+                time.sleep(1.5)
+                webbrowser.open('http://127.0.0.1:5000')
+                print("Web UI launched. Opened browser to http://127.0.0.1:5000")
+            else:
+                print("Web UI (app.py) not found. Please place your video in the data/ folder and rerun.")
+        except Exception as e:
+            print(f"Failed to launch web UI: {e}")
+
         return
     
     # Load video file
@@ -319,6 +340,22 @@ def main():
     # Open report in default browser
     print("📊 Opening report in browser...")
     webbrowser.open('file://' + report_path)
+
+    # Cleanup: remove the original uploaded file (in uploads/) and the copied data file
+    try:
+        if UPLOADED_FILEPATH and os.path.exists(UPLOADED_FILEPATH):
+            os.remove(UPLOADED_FILEPATH)
+            print(f"Removed uploaded file: {UPLOADED_FILEPATH}")
+    except Exception as e:
+        print(f"Warning: failed to remove uploaded file: {e}")
+
+    try:
+        copied_path = os.path.join(os.path.dirname(__file__), 'data', 'mall_entry.mp4')
+        if os.path.exists(copied_path):
+            os.remove(copied_path)
+            print(f"Removed copied data file: {copied_path}")
+    except Exception as e:
+        print(f"Warning: failed to remove copied data file: {e}")
     
     print("\n" + "="*50)
     print("FINAL STATISTICS")
