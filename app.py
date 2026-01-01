@@ -103,8 +103,12 @@ def process_video():
 
         # Run main.py in subprocess and pass the original uploaded filepath so
         # the processing script can delete it after finishing.
-        python_exe = os.path.join(os.path.dirname(__file__), '.venv', 'Scripts', 'python.exe')
-        if not os.path.exists(python_exe):
+        
+        # Try to use the virtual environment Python if available
+        venv_python = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.venv', 'Scripts', 'python.exe')
+        if os.path.exists(venv_python):
+            python_exe = venv_python
+        else:
             # Fallback to system python
             python_exe = sys.executable
 

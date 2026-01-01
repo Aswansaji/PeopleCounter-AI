@@ -25,6 +25,15 @@ def main():
     """Main function to run the people counter application."""
     print("PeopleCounter Application Starting...")
     
+    # Check if video was uploaded via web UI
+    video_path = os.path.join("data", "mall_entry.mp4")
+    
+    if not os.path.exists(video_path):
+        print("No video file found. Please upload a video via the web interface.")
+        print("The web UI should already be running at http://127.0.0.1:5000")
+        print("If not, run 'python app.py' to start the web server.")
+        return
+    
     # Load YOLO model
     print("Loading YOLOv8 model...")
     model = YOLO("yolov8n.pt")
@@ -44,30 +53,6 @@ def main():
     # Dictionary to track centroid positions for crossing detection
     # Format: {track_id: {'previous_y': y_coord, 'counted': False}}
     track_positions = {}
-    
-    # Set up video source
-    video_path = os.path.join("data", "mall_entry.mp4")
-    
-    if not os.path.exists(video_path):
-        print(f"Video file not found at {video_path}.")
-        print("Launching web upload UI so you can upload a video.")
-
-        # Try to start the Flask web UI (app.py) using the same Python executable
-        try:
-            python_exe = sys.executable
-            app_py = os.path.join(os.path.dirname(__file__), 'app.py')
-            if os.path.exists(app_py):
-                subprocess.Popen([python_exe, app_py], cwd=os.path.dirname(__file__))
-                # Give the server a moment to start
-                time.sleep(1.5)
-                webbrowser.open('http://127.0.0.1:5000')
-                print("Web UI launched. Opened browser to http://127.0.0.1:5000")
-            else:
-                print("Web UI (app.py) not found. Please place your video in the data/ folder and rerun.")
-        except Exception as e:
-            print(f"Failed to launch web UI: {e}")
-
-        return
     
     # Load video file
     cap = cv2.VideoCapture(video_path)
@@ -146,6 +131,7 @@ def main():
             current_track_ids.add(track_id)
             
             x1, y1, x2, y2 = bbox
+            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
             current_y = current_centroid[1]
             
             # Initialize tracking for new IDs

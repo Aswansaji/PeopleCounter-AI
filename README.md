@@ -2,6 +2,8 @@
 
 A real-time people counting system using YOLOv8 object detection and SORT tracking. Automatically detects, tracks, and counts people crossing a designated line in video footage.
 
+> **💡 Getting Started:** Simply run `python app.py` or `run_web.bat` to start the web interface, then upload your video. No need to manually place files in folders!
+
 ## Features ✨
 
 - **YOLOv8 Detection**: State-of-the-art object detection for person detection
